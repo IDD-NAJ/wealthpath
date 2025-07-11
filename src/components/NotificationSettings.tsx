@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Plus, X, Download } from "lucide-react";
+import NewsWorkflowDownloader from "./NewsWorkflowDownloader";
 
 interface NotificationSetting {
   id: string;
@@ -292,33 +293,25 @@ export const NotificationSettings = () => {
         </CardContent>
       </Card>
 
+      <NewsWorkflowDownloader />
+
       <Card>
         <CardHeader>
-          <CardTitle>n8n Workflow Downloads</CardTitle>
+          <CardTitle>Legacy News Automation Workflow</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col items-center gap-4 p-6 border rounded-lg bg-card">
             <div className="text-center">
-              <h4 className="font-medium mb-2">News Automation Workflow</h4>
+              <h4 className="font-medium mb-2">Original News Automation Workflow</h4>
               <p className="text-sm text-muted-foreground">
-                Complete automated news pipeline that fetches, processes, and submits article drafts
+                Original automated news pipeline (may have merge node issues)
               </p>
             </div>
             
             <Button onClick={downloadNewsWorkflow} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
-              Download News Automation Workflow
+              Download Original Workflow
             </Button>
-            
-            <div className="text-xs text-muted-foreground text-center max-w-md">
-              <p className="mb-2">This workflow includes:</p>
-              <ul className="list-disc list-inside text-left space-y-1">
-                <li>Automated RSS feed monitoring</li>
-                <li>Website content scraping</li>
-                <li>Content processing and filtering</li>
-                <li>Draft article submission to your system</li>
-              </ul>
-            </div>
           </div>
         </CardContent>
       </Card>

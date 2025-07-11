@@ -19,6 +19,7 @@ import { AdManager } from './AdManager';
 import { DraftArticlesManager } from './DraftArticlesManager';
 import { NewsSourcesManager } from './NewsSourcesManager';
 import { NotificationSettings } from './NotificationSettings';
+import NewsWorkflowDownloader from './NewsWorkflowDownloader';
 
 interface Article {
   id: string;

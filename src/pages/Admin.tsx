@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import AdminAuth from '../components/AdminAuth';
 import AdminDashboard from '../components/AdminDashboard';
+import NewsWorkflowDownloader from '../components/NewsWorkflowDownloader';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
