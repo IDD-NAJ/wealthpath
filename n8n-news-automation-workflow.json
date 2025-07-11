@@ -136,11 +136,11 @@
     },
     {
       "parameters": {
-        "mode": "combine"
+        "jsCode": "// Combine articles from both RSS and web scraping paths\nconst allArticles = [];\n\n// Get all input items from all connected nodes\nconst items = $input.all();\n\nfor (const item of items) {\n  if (item.json && typeof item.json === 'object') {\n    // If it's an array of articles, spread them\n    if (Array.isArray(item.json)) {\n      allArticles.push(...item.json);\n    } else {\n      // If it's a single article object, add it\n      allArticles.push(item.json);\n    }\n  }\n}\n\nconsole.log(`Combined ${allArticles.length} articles from all sources`);\nreturn allArticles;"
       },
       "id": "10",
-      "name": "Merge All Articles",
-      "type": "n8n-nodes-base.merge",
+      "name": "Combine All Articles",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1780, 200]
     },
