@@ -100,16 +100,30 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("Edge function started, creating Supabase client...");
+    
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const draftData: DraftSubmission = await req.json();
+    console.log("Parsing request body...");
+    const requestText = await req.text();
+    console.log("Raw request body:", requestText);
+    
+    let draftData: DraftSubmission;
+    try {
+      draftData = JSON.parse(requestText);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      throw new Error(`Invalid JSON in request body: ${parseError.message}`);
+    }
     
     console.log("Received draft submission:", { 
       title: draftData.original_title,
-      source: draftData.source_name 
+      source: draftData.source_name,
+      hasContent: !!draftData.original_content,
+      contentLength: draftData.original_content?.length || 0
     });
 
     // Paraphrase content if not already provided
@@ -169,19 +183,19 @@ const handler = async (req: Request): Promise<Response> => {
       sourceId = newSource.id;
     }
 
-    // Create draft article
+    // Create draft article with fallbacks for missing fields
     const { data: draft, error: draftError } = await supabase
       .from("draft_articles")
       .insert({
         source_id: sourceId,
-        original_url: draftData.original_url,
-        original_title: draftData.original_title,
-        original_content: draftData.original_content,
-        paraphrased_title: paraphrased_title,
-        paraphrased_content: paraphrased_content,
-        paraphrased_excerpt: paraphrased_excerpt,
-        suggested_category: draftData.suggested_category,
-        image_url: draftData.image_url,
+        original_url: draftData.original_url || draftData.source_url || "unknown",
+        original_title: draftData.original_title || "Untitled",
+        original_content: draftData.original_content || "No content available",
+        paraphrased_title: paraphrased_title || draftData.original_title || "Untitled",
+        paraphrased_content: paraphrased_content || draftData.original_content || "No content available",
+        paraphrased_excerpt: paraphrased_excerpt || (draftData.original_content || "").substring(0, 200) + '...',
+        suggested_category: draftData.suggested_category || "General",
+        image_url: draftData.image_url || null,
         status: "pending"
       })
       .select()
