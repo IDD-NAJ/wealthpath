@@ -119,15 +119,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!paraphrased_title || !paraphrased_content) {
       console.log("Paraphrasing content automatically...");
-      const paraphrased = await paraphraseContent(
-        draftData.original_title,
-        draftData.original_content,
-        draftData.suggested_category
-      );
       
-      paraphrased_title = paraphrased.paraphrased_title;
-      paraphrased_content = paraphrased.paraphrased_content;
-      paraphrased_excerpt = paraphrased.paraphrased_excerpt;
+      // Check if OpenAI API key is available
+      const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+      if (!openAIApiKey) {
+        console.log("OpenAI API key not found, using original content");
+        paraphrased_title = draftData.original_title;
+        paraphrased_content = draftData.original_content;
+        paraphrased_excerpt = draftData.original_content.substring(0, 200) + '...';
+      } else {
+        const paraphrased = await paraphraseContent(
+          draftData.original_title,
+          draftData.original_content,
+          draftData.suggested_category
+        );
+        
+        paraphrased_title = paraphrased.paraphrased_title;
+        paraphrased_content = paraphrased.paraphrased_content;
+        paraphrased_excerpt = paraphrased.paraphrased_excerpt;
+      }
     }
 
     // Find or create news source
