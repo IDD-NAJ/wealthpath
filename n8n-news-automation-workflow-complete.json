@@ -1,0 +1,459 @@
+{
+  "name": "Complete News Automation Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "f8b9c1e2-3a4d-5e6f-7890-1a2b3c4d5e6f",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://xpmclamtmlogogcpogbq.supabase.co/rest/v1/news_sources",
+        "options": {
+          "headers": {
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwbWNsYW10bWxvZ29nY3BvZ2JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNzY3NDYsImV4cCI6MjA2Mzg1Mjc0Nn0.Q8Xob5r1aRxjz4W24J7XRCXqxswkBTMcLKXJSXwJCqA",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwbWNsYW10bWxvZ29nY3BvZ2JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNzY3NDYsImV4cCI6MjA2Mzg1Mjc0Nn0.Q8Xob5r1aRxjz4W24J7XRCXqxswkBTMcLKXJSXwJCqA"
+          },
+          "qs": {
+            "active": "eq.true"
+          }
+        }
+      },
+      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "name": "Fetch Active News Sources",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Determine processing type based on RSS feed availability\nconst items = $input.all();\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // Check if RSS feed URL exists and is not null/empty\n  if (data.rss_feed_url && data.rss_feed_url.trim() !== '') {\n    item.json.processing_type = 'rss';\n    item.json.feed_url = data.rss_feed_url;\n  } else {\n    item.json.processing_type = 'web_scraping';\n    item.json.target_url = data.url;\n  }\n  \n  // Ensure we have source info for later\n  item.json.source_name = data.name;\n  item.json.source_url = data.url;\n}\n\nreturn items;"
+      },
+      "id": "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
+      "name": "Determine Processing Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.processing_type }}",
+              "rightValue": "rss",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d4e5f6g7-h8i9-0123-4567-890123defghi",
+      "name": "Route by Processing Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.feed_url }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "e5f6g7h8-i9j0-1234-5678-901234efghij",
+      "name": "Fetch RSS Feed",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.target_url }}",
+        "options": {
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "f6g7h8i9-j0k1-2345-6789-012345fghijk",
+      "name": "Fetch Website Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1340,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process RSS feed items\nconst items = $input.all();\nconst processedItems = [];\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // Extract content from RSS item\n  let content = '';\n  let title = '';\n  let url = '';\n  let imageUrl = '';\n  \n  if (data.title) {\n    title = data.title;\n  }\n  \n  if (data.link) {\n    url = data.link;\n  }\n  \n  // Try to get content from various RSS fields\n  if (data.content) {\n    content = data.content;\n  } else if (data.description) {\n    content = data.description;\n  } else if (data.summary) {\n    content = data.summary;\n  }\n  \n  // Try to extract image\n  if (data.enclosure && data.enclosure.url) {\n    imageUrl = data.enclosure.url;\n  } else if (data.image) {\n    imageUrl = data.image;\n  }\n  \n  // Clean content from HTML tags\n  content = content.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n  \n  // Skip if content is too short\n  if (content.length < 100 || title.length < 10) {\n    continue;\n  }\n  \n  // Determine category based on content analysis\n  let category = 'General';\n  const lowerContent = (title + ' ' + content).toLowerCase();\n  \n  if (lowerContent.includes('sport') || lowerContent.includes('football') || lowerContent.includes('soccer')) {\n    category = 'Sports';\n  } else if (lowerContent.includes('tech') || lowerContent.includes('technology') || lowerContent.includes('digital')) {\n    category = 'Technology';\n  } else if (lowerContent.includes('business') || lowerContent.includes('economy') || lowerContent.includes('market')) {\n    category = 'Business';\n  } else if (lowerContent.includes('politics') || lowerContent.includes('government') || lowerContent.includes('election')) {\n    category = 'Politics';\n  } else if (lowerContent.includes('health') || lowerContent.includes('medical') || lowerContent.includes('hospital')) {\n    category = 'Lifestyle';\n  }\n  \n  processedItems.push({\n    json: {\n      source_name: $('Determine Processing Type').item.json.source_name,\n      source_url: $('Determine Processing Type').item.json.source_url,\n      original_url: url,\n      original_title: title,\n      original_content: content,\n      suggested_category: category,\n      image_url: imageUrl || null,\n      processing_type: 'rss'\n    }\n  });\n}\n\nreturn processedItems;"
+      },
+      "id": "g7h8i9j0-k1l2-3456-7890-123456ghijkl",
+      "name": "Process RSS Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process web scraping results\nconst items = $input.all();\nconst processedItems = [];\n\nfor (const item of items) {\n  const html = item.binary?.data ? Buffer.from(item.binary.data.data, 'base64').toString() : item.json.data || '';\n  \n  if (!html || html.length < 500) {\n    continue;\n  }\n  \n  // Extract title\n  let title = '';\n  const titleMatch = html.match(/<title[^>]*>([^<]+)<\\/title>/i);\n  if (titleMatch) {\n    title = titleMatch[1].trim();\n  }\n  \n  // Try Open Graph title as fallback\n  if (!title) {\n    const ogTitleMatch = html.match(/<meta[^>]*property=[\"']og:title[\"'][^>]*content=[\"']([^\"']+)[\"'][^>]*>/i);\n    if (ogTitleMatch) {\n      title = ogTitleMatch[1].trim();\n    }\n  }\n  \n  // Extract main content\n  let content = '';\n  \n  // Remove script and style tags\n  let cleanHtml = html.replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n                     .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n                     .replace(/<nav[^>]*>[\\s\\S]*?<\\/nav>/gi, '')\n                     .replace(/<header[^>]*>[\\s\\S]*?<\\/header>/gi, '')\n                     .replace(/<footer[^>]*>[\\s\\S]*?<\\/footer>/gi, '');\n  \n  // Try to find main content areas\n  const contentSelectors = [\n    /<article[^>]*>([\\s\\S]*?)<\\/article>/gi,\n    /<main[^>]*>([\\s\\S]*?)<\\/main>/gi,\n    /<div[^>]*class=[\"'][^\"']*content[^\"']*[\"'][^>]*>([\\s\\S]*?)<\\/div>/gi,\n    /<div[^>]*class=[\"'][^\"']*post[^\"']*[\"'][^>]*>([\\s\\S]*?)<\\/div>/gi\n  ];\n  \n  for (const selector of contentSelectors) {\n    const matches = cleanHtml.match(selector);\n    if (matches && matches.length > 0) {\n      content = matches[0];\n      break;\n    }\n  }\n  \n  // If no structured content found, extract from body\n  if (!content) {\n    const bodyMatch = cleanHtml.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i);\n    if (bodyMatch) {\n      content = bodyMatch[1];\n    }\n  }\n  \n  // Clean content from HTML tags\n  content = content.replace(/<[^>]*>/g, ' ')\n                  .replace(/\\s+/g, ' ')\n                  .replace(/&nbsp;/g, ' ')\n                  .replace(/&amp;/g, '&')\n                  .replace(/&lt;/g, '<')\n                  .replace(/&gt;/g, '>')\n                  .replace(/&quot;/g, '\"')\n                  .trim();\n  \n  // Skip if content is too short or title is missing\n  if (content.length < 200 || title.length < 10) {\n    continue;\n  }\n  \n  // Extract image URL\n  let imageUrl = '';\n  const ogImageMatch = html.match(/<meta[^>]*property=[\"']og:image[\"'][^>]*content=[\"']([^\"']+)[\"'][^>]*>/i);\n  if (ogImageMatch) {\n    imageUrl = ogImageMatch[1];\n  }\n  \n  // Determine category\n  let category = 'General';\n  const lowerContent = (title + ' ' + content.substring(0, 1000)).toLowerCase();\n  \n  if (lowerContent.includes('sport') || lowerContent.includes('football') || lowerContent.includes('soccer')) {\n    category = 'Sports';\n  } else if (lowerContent.includes('tech') || lowerContent.includes('technology') || lowerContent.includes('digital')) {\n    category = 'Technology';\n  } else if (lowerContent.includes('business') || lowerContent.includes('economy') || lowerContent.includes('market')) {\n    category = 'Business';\n  } else if (lowerContent.includes('politics') || lowerContent.includes('government') || lowerContent.includes('election')) {\n    category = 'Politics';\n  } else if (lowerContent.includes('health') || lowerContent.includes('medical') || lowerContent.includes('hospital')) {\n    category = 'Lifestyle';\n  }\n  \n  processedItems.push({\n    json: {\n      source_name: $('Determine Processing Type').item.json.source_name,\n      source_url: $('Determine Processing Type').item.json.source_url,\n      original_url: $('Determine Processing Type').item.json.target_url,\n      original_title: title,\n      original_content: content,\n      suggested_category: category,\n      image_url: imageUrl || null,\n      html_content: html,\n      processing_type: 'web_scraping'\n    }\n  });\n}\n\nreturn processedItems;"
+      },
+      "id": "h8i9j0k1-l2m3-4567-8901-234567hijklm",
+      "name": "Process Web Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "i9j0k1l2-m3n4-5678-9012-345678ijklmn",
+      "name": "Combine Articles",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.original_content.length }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "condition2",
+              "leftValue": "={{ $json.original_title.length }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "j0k1l2m3-n4o5-6789-0123-456789jklmno",
+      "name": "Filter Articles",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://xpmclamtmlogogcpogbq.supabase.co/functions/v1/n8n-submit-draft",
+        "authentication": "genericCredential",
+        "genericAuthType": "httpHeaderAuth",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwbWNsYW10bWxvZ29nY3BvZ2JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNzY3NDYsImV4cCI6MjA2Mzg1Mjc0Nn0.Q8Xob5r1aRxjz4W24J7XRCXqxswkBTMcLKXJSXwJCqA"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "source_name",
+              "value": "={{ $json.source_name }}"
+            },
+            {
+              "name": "source_url",
+              "value": "={{ $json.source_url }}"
+            },
+            {
+              "name": "original_url",
+              "value": "={{ $json.original_url }}"
+            },
+            {
+              "name": "original_title",
+              "value": "={{ $json.original_title }}"
+            },
+            {
+              "name": "original_content",
+              "value": "={{ $json.original_content }}"
+            },
+            {
+              "name": "suggested_category",
+              "value": "={{ $json.suggested_category }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $json.image_url }}"
+            },
+            {
+              "name": "html_content",
+              "value": "={{ $json.html_content }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "retry": {
+            "enabled": true,
+            "maxTries": 3
+          }
+        }
+      },
+      "id": "k1l2m3n4-o5p6-7890-1234-567890klmnop",
+      "name": "Submit to Draft API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log workflow results\nconst items = $input.all();\nconst successCount = items.filter(item => item.json.success).length;\nconst totalCount = items.length;\n\nconsole.log(`Workflow completed: ${successCount}/${totalCount} articles successfully processed`);\n\nconst results = {\n  workflow_completed_at: new Date().toISOString(),\n  total_articles_processed: totalCount,\n  successful_submissions: successCount,\n  failed_submissions: totalCount - successCount,\n  results: items.map(item => ({\n    title: item.json.original_title || 'Unknown',\n    success: item.json.success || false,\n    error: item.json.error || null\n  }))\n};\n\nreturn [{ json: results }];"
+      },
+      "id": "l2m3n4o5-p6q7-8901-2345-678901lmnopq",
+      "name": "Log Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Active News Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Active News Sources": {
+      "main": [
+        [
+          {
+            "node": "Split Into Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [
+          {
+            "node": "Determine Processing Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Processing Type": {
+      "main": [
+        [
+          {
+            "node": "Route by Processing Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Processing Type": {
+      "main": [
+        [
+          {
+            "node": "Fetch RSS Feed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Website Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Process RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Website Content": {
+      "main": [
+        [
+          {
+            "node": "Process Web Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Combine Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Web Content": {
+      "main": [
+        [
+          {
+            "node": "Combine Articles",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Articles": {
+      "main": [
+        [
+          {
+            "node": "Filter Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Articles": {
+      "main": [
+        [
+          {
+            "node": "Submit to Draft API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit to Draft API": {
+      "main": [
+        [
+          {
+            "node": "Log Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-07-13T13:10:00.000Z",
+  "updatedAt": "2025-07-13T13:10:00.000Z",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "versionId": "1"
+}
