@@ -19,6 +19,7 @@ interface DraftSubmission {
   paraphrased_excerpt?: string;
   suggested_category: string;
   image_url?: string;
+  html_content?: string; // For extracting images from HTML
 }
 
 async function paraphraseContent(title: string, content: string, category: string): Promise<{
@@ -46,22 +47,25 @@ async function paraphraseContent(title: string, content: string, category: strin
           role: 'system',
           content: `You are a professional news editor. Your task is to paraphrase news articles while maintaining accuracy and journalistic integrity. 
 
-Rules:
-1. Rewrite the content completely in your own words
-2. Maintain all key facts, dates, names, and important details
-3. Keep the same tone and style appropriate for the "${category}" category
-4. Make the content engaging and readable
-5. Ensure the paraphrased version is substantially different from the original but conveys the same information
-6. Create a compelling excerpt that summarizes the main points in 2-3 sentences
+CRITICAL REQUIREMENTS:
+1. The paraphrased content MUST be between 500-1000 words - this is mandatory
+2. If the original content is shorter than 500 words, expand it with relevant context, background information, and detailed explanations while maintaining accuracy
+3. If the original content is longer than 1000 words, condense it to the most important information while keeping all key facts
+4. Rewrite the content completely in your own words
+5. Maintain all key facts, dates, names, and important details
+6. Keep the same tone and style appropriate for the "${category}" category
+7. Make the content engaging and readable with proper paragraph structure
+8. Ensure the paraphrased version is substantially different from the original but conveys the same information
+9. Create a compelling excerpt that summarizes the main points in 2-3 sentences
 
 Return your response as a JSON object with these exact keys:
 - paraphrased_title: A rewritten headline that captures the essence of the story
-- paraphrased_content: The full article rewritten in your own words
+- paraphrased_content: The full article rewritten in your own words (MUST be 500-1000 words)
 - paraphrased_excerpt: A 2-3 sentence summary of the main points`
         },
         {
           role: 'user',
-          content: `Please paraphrase this news article:
+          content: `Please paraphrase this news article ensuring the content is between 500-1000 words:
 
 Title: ${title}
 
@@ -71,6 +75,7 @@ Category: ${category}`
         }
       ],
       temperature: 0.7,
+      max_tokens: 2000,
       response_format: { type: "json_object" }
     }),
   });
@@ -91,6 +96,88 @@ Category: ${category}`
     paraphrased_content: result.paraphrased_content || content,
     paraphrased_excerpt: result.paraphrased_excerpt || content.substring(0, 200) + '...'
   };
+}
+
+async function extractImageFromContent(originalUrl: string, htmlContent?: string): Promise<string | null> {
+  try {
+    console.log("Extracting image from content for URL:", originalUrl);
+    
+    // If HTML content is provided, extract images from it
+    if (htmlContent) {
+      const imgRegex = /<img[^>]+src\s*=\s*['\"]([^'\"]+)['\"][^>]*>/gi;
+      const matches = Array.from(htmlContent.matchAll(imgRegex));
+      
+      if (matches.length > 0) {
+        const imageUrl = matches[0][1];
+        // Convert relative URLs to absolute URLs
+        if (imageUrl.startsWith('/')) {
+          const baseUrl = new URL(originalUrl).origin;
+          return baseUrl + imageUrl;
+        } else if (imageUrl.startsWith('http')) {
+          return imageUrl;
+        }
+      }
+    }
+    
+    // If no image found in HTML content, try fetching the page
+    if (originalUrl && originalUrl !== 'unknown') {
+      console.log("Fetching page to extract images:", originalUrl);
+      
+      try {
+        const response = await fetch(originalUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (response.ok) {
+          const html = await response.text();
+          
+          // Try to find Open Graph image
+          const ogImageMatch = html.match(/<meta[^>]*property=["\']og:image["\'][^>]*content=["\']([^"\']+)["\'][^>]*>/i);
+          if (ogImageMatch) {
+            const imageUrl = ogImageMatch[1];
+            if (imageUrl.startsWith('/')) {
+              const baseUrl = new URL(originalUrl).origin;
+              return baseUrl + imageUrl;
+            }
+            return imageUrl;
+          }
+          
+          // Try to find Twitter card image
+          const twitterImageMatch = html.match(/<meta[^>]*name=["\']twitter:image["\'][^>]*content=["\']([^"\']+)["\'][^>]*>/i);
+          if (twitterImageMatch) {
+            const imageUrl = twitterImageMatch[1];
+            if (imageUrl.startsWith('/')) {
+              const baseUrl = new URL(originalUrl).origin;
+              return baseUrl + imageUrl;
+            }
+            return imageUrl;
+          }
+          
+          // Try to find the first image in the content
+          const imgMatch = html.match(/<img[^>]+src\s*=\s*['\"]([^'\"]+)['\"][^>]*>/i);
+          if (imgMatch) {
+            const imageUrl = imgMatch[1];
+            if (imageUrl.startsWith('/')) {
+              const baseUrl = new URL(originalUrl).origin;
+              return baseUrl + imageUrl;
+            } else if (imageUrl.startsWith('http')) {
+              return imageUrl;
+            }
+          }
+        }
+      } catch (fetchError) {
+        console.error("Error fetching page for image extraction:", fetchError);
+      }
+    }
+    
+    console.log("No image found for article");
+    return null;
+  } catch (error) {
+    console.error("Error extracting image:", error);
+    return null;
+  }
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -154,6 +241,19 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Extract image if not provided
+    let imageUrl = draftData.image_url;
+    if (!imageUrl) {
+      console.log("No image URL provided, attempting to extract from content...");
+      imageUrl = await extractImageFromContent(
+        draftData.original_url || draftData.source_url,
+        draftData.html_content
+      );
+      if (imageUrl) {
+        console.log("Successfully extracted image:", imageUrl);
+      }
+    }
+
     // Find or create news source
     let sourceId: string;
     const { data: existingSource } = await supabase
@@ -195,7 +295,7 @@ const handler = async (req: Request): Promise<Response> => {
         paraphrased_content: paraphrased_content || draftData.original_content || "No content available",
         paraphrased_excerpt: paraphrased_excerpt || (draftData.original_content || "").substring(0, 200) + '...',
         suggested_category: draftData.suggested_category || "General",
-        image_url: draftData.image_url || null,
+        image_url: imageUrl || null,
         status: "pending"
       })
       .select()
