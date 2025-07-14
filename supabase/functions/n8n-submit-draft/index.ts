@@ -187,12 +187,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("Edge function started, creating Supabase client...");
+    console.log("Edge function started, method:", req.method);
+    console.log("Request URL:", req.url);
     
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    // Check environment variables
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    console.log("Environment check:", {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasSupabaseKey: !!supabaseKey,
+      supabaseUrlLength: supabaseUrl?.length || 0,
+      supabaseKeyLength: supabaseKey?.length || 0
+    });
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+    
+    console.log("Creating Supabase client...");
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log("Parsing request body...");
     const requestText = await req.text();
