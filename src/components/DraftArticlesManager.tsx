@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, XCircle, Eye, Calendar, Globe, User } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Calendar, Globe, User, Trash2, Edit } from "lucide-react";
 
 interface DraftArticle {
   id: string;
@@ -180,6 +180,38 @@ export const DraftArticlesManager = () => {
     }
   };
 
+  const handleDelete = async (draft: DraftArticle) => {
+    if (!confirm("Are you sure you want to delete this draft article? This action cannot be undone.")) {
+      return;
+    }
+
+    setProcessingId(draft.id);
+    try {
+      const { error } = await supabase
+        .from("draft_articles")
+        .delete()
+        .eq("id", draft.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Draft article deleted successfully"
+      });
+
+      fetchDrafts();
+    } catch (error: any) {
+      console.error("Error deleting draft:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete draft article",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       pending: { variant: "secondary" as const, text: "Pending Review" },
@@ -227,6 +259,14 @@ export const DraftArticlesManager = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(draft.status)}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(draft)}
+                      disabled={processingId === draft.id}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button 
