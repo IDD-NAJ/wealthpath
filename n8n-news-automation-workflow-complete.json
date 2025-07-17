@@ -104,7 +104,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $json.feed_url }}",
+        "feedUrl": "={{ $json.feed_url }}",
         "options": {
           "timeout": 30000
         }
