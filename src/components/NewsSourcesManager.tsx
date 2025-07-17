@@ -136,11 +136,34 @@ export const NewsSourcesManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this news source?")) {
-      return;
-    }
-
     try {
+      // First check if there are any draft articles associated with this source
+      const { data: drafts, error: draftError } = await supabase
+        .from("draft_articles")
+        .select("id")
+        .eq("source_id", id);
+
+      if (draftError) throw draftError;
+
+      if (drafts && drafts.length > 0) {
+        const confirmed = confirm(
+          `This news source has ${drafts.length} associated draft article(s). Deleting the source will also delete these drafts. Are you sure you want to continue?`
+        );
+        if (!confirmed) return;
+
+        // Delete associated draft articles first
+        const { error: deleteDraftsError } = await supabase
+          .from("draft_articles")
+          .delete()
+          .eq("source_id", id);
+
+        if (deleteDraftsError) throw deleteDraftsError;
+      } else {
+        const confirmed = confirm("Are you sure you want to delete this news source?");
+        if (!confirmed) return;
+      }
+
+      // Now delete the news source
       const { error } = await supabase
         .from("news_sources")
         .delete()
@@ -158,7 +181,7 @@ export const NewsSourcesManager = () => {
       console.error("Error deleting news source:", error);
       toast({
         title: "Error",
-        description: "Failed to delete news source",
+        description: `Failed to delete news source: ${error.message}`,
         variant: "destructive"
       });
     }
