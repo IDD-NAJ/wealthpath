@@ -241,42 +241,8 @@
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "source_name",
-              "value": "={{ $json.source_name }}"
-            },
-            {
-              "name": "source_url",
-              "value": "={{ $json.source_url }}"
-            },
-            {
-              "name": "original_url",
-              "value": "={{ $json.original_url }}"
-            },
-            {
-              "name": "original_title",
-              "value": "={{ $json.original_title }}"
-            },
-            {
-              "name": "original_content",
-              "value": "={{ $json.original_content }}"
-            },
-            {
-              "name": "suggested_category",
-              "value": "={{ $json.suggested_category }}"
-            },
-            {
-              "name": "image_url",
-              "value": "={{ $json.image_url }}"
-            },
-            {
-              "name": "html_content",
-              "value": "={{ $json.html_content }}"
-            }
-          ]
-        },
+        "contentType": "application/json",
+        "body": "={{ JSON.stringify({\n  source_name: $json.source_name,\n  source_url: $json.source_url,\n  original_url: $json.original_url,\n  original_title: $json.original_title,\n  original_content: $json.original_content,\n  suggested_category: $json.suggested_category,\n  image_url: $json.image_url,\n  html_content: $json.html_content\n}) }}",
         "options": {
           "timeout": 60000,
           "retry": {
