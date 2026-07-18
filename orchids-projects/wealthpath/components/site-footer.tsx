@@ -7,13 +7,12 @@ import { Input } from '@/components/ui/input'
 
 const footerColumns = [
   {
-    title: 'Programs',
+    title: 'Travel',
     links: [
-      { label: 'Investing', href: '/category/investing' },
-      { label: 'Crypto', href: '/category/crypto' },
-      { label: 'AI Tools', href: '/category/ai-tools' },
-      { label: 'Web Hosting', href: '/category/web-hosting' },
-      { label: 'Business Software', href: '/category/business-software' },
+      { label: 'Destinations', href: '/destinations' },
+      { label: 'Deals', href: '/deals' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Programs', href: '/programs' },
     ],
   },
   {
@@ -21,7 +20,7 @@ const footerColumns = [
     links: [
       { label: 'All Reviews', href: '/reviews' },
       { label: 'Comparisons', href: '/comparisons' },
-      { label: 'Search Programs', href: '/search' },
+      { label: 'FAQ', href: '/faq' },
       { label: 'Categories', href: '/categories' },
     ],
   },
@@ -30,8 +29,8 @@ const footerColumns = [
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'How We Review', href: '/methodology' },
-      { label: 'Advertise', href: '/advertise' },
       { label: 'Contact', href: '/contact' },
+      { label: 'Advertise', href: '/advertise' },
     ],
   },
   {
@@ -39,7 +38,7 @@ const footerColumns = [
     links: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
-      { label: 'Affiliate Disclosure', href: '/disclosure' },
+      { label: 'Affiliate Disclosure', href: '/about#disclosure' },
       { label: 'Cookie Policy', href: '/cookies' },
     ],
   },
