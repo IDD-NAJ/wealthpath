@@ -8,6 +8,7 @@ import {
   PieChart, CreditCard, TrendingUp, Calendar, Megaphone, Share2,
   FileText, MessageSquare, Zap, Eye, Tag, Globe, Activity, Lock,
   ScrollText, DollarSign, Award, ChevronRight,
+  LayoutDashboard, MapPin, Ticket, Star, HelpCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -26,6 +27,17 @@ const navGroups = [
       { label: 'Programs', icon: <Share2 className="h-4 w-4" />, section: 'affiliates' },
       { label: 'Analytics', icon: <PieChart className="h-4 w-4" />, section: 'analytics' },
       { label: 'SEO Tools', icon: <Eye className="h-4 w-4" />, section: 'seo' },
+    ],
+  },
+  {
+    label: 'Site CMS',
+    items: [
+      { label: 'Homepage Builder', icon: <LayoutDashboard className="h-4 w-4" />, section: 'homepage-builder' },
+      { label: 'Destinations', icon: <MapPin className="h-4 w-4" />, section: 'destinations-cms' },
+      { label: 'Deals', icon: <Ticket className="h-4 w-4" />, section: 'deals-cms' },
+      { label: 'Blog Posts', icon: <BookOpen className="h-4 w-4" />, section: 'blog-cms' },
+      { label: 'Testimonials', icon: <Star className="h-4 w-4" />, section: 'testimonials-cms' },
+      { label: 'FAQs', icon: <HelpCircle className="h-4 w-4" />, section: 'faqs-cms' },
     ],
   },
   {

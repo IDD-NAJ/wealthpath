@@ -26,6 +26,12 @@ import AdminLanguages from './admin-sections/admin-languages'
 import AdminIntegrations from './admin-sections/admin-integrations'
 import AdminABTesting from './admin-sections/admin-ab-testing'
 import AdminAuditLog from './admin-sections/admin-audit-log'
+import AdminHomepageBuilder from './admin-sections/admin-homepage-builder'
+import AdminDestinationsCms from './admin-sections/admin-destinations-cms'
+import AdminDealsCms from './admin-sections/admin-deals-cms'
+import AdminBlogCms from './admin-sections/admin-blog-cms'
+import AdminTestimonialsCms from './admin-sections/admin-testimonials-cms'
+import AdminFaqsCms from './admin-sections/admin-faqs-cms'
 
 export function AdminDashboard() {
   const router = useRouter()
@@ -102,6 +108,18 @@ export function AdminDashboard() {
         return <AdminABTesting />
       case 'audit-log':
         return <AdminAuditLog />
+      case 'homepage-builder':
+        return <AdminHomepageBuilder />
+      case 'destinations-cms':
+        return <AdminDestinationsCms />
+      case 'deals-cms':
+        return <AdminDealsCms />
+      case 'blog-cms':
+        return <AdminBlogCms />
+      case 'testimonials-cms':
+        return <AdminTestimonialsCms />
+      case 'faqs-cms':
+        return <AdminFaqsCms />
       default:
         return <AdminOverview />
     }
