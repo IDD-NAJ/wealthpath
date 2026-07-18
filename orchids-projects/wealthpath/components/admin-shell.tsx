@@ -3,11 +3,11 @@
 import { ReactNode, useState } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { Button } from '@/components/ui/button'
-import { 
-  BarChart3, BookOpen, Users, Settings, LogOut, Menu, X, 
+import {
+  BarChart3, BookOpen, Users, LogOut, Menu, X,
   PieChart, CreditCard, TrendingUp, Calendar, Megaphone, Share2,
   FileText, MessageSquare, Zap, Eye, Tag, Globe, Activity, Lock,
-  ScrollText, DollarSign, Award
+  ScrollText, DollarSign, Award, ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -16,32 +16,44 @@ interface NavItem {
   label: string
   icon: ReactNode
   section: string
-  color?: string
 }
 
-const navItems: NavItem[] = [
-  { label: 'Overview', icon: <BarChart3 className="h-5 w-5" />, section: 'overview', color: 'from-blue-500 to-blue-600' },
-  { label: 'Articles', icon: <BookOpen className="h-5 w-5" />, section: 'articles', color: 'from-purple-500 to-purple-600' },
-  { label: 'AI Generator', icon: <Zap className="h-5 w-5" />, section: 'ai-generator', color: 'from-amber-500 to-amber-600' },
-  { label: 'Users', icon: <Users className="h-5 w-5" />, section: 'users', color: 'from-green-500 to-green-600' },
-  { label: 'Courses', icon: <BookOpen className="h-5 w-5" />, section: 'courses', color: 'from-indigo-500 to-indigo-600' },
-  { label: 'Analytics', icon: <PieChart className="h-5 w-5" />, section: 'analytics', color: 'from-red-500 to-red-600' },
-  { label: 'Payments', icon: <CreditCard className="h-5 w-5" />, section: 'payments', color: 'from-emerald-500 to-emerald-600' },
-  { label: 'Subscriptions', icon: <TrendingUp className="h-5 w-5" />, section: 'subscriptions', color: 'from-cyan-500 to-cyan-600' },
-  { label: 'Student Progress', icon: <Activity className="h-5 w-5" />, section: 'student-progress', color: 'from-fuchsia-500 to-fuchsia-600' },
-  { label: 'Scheduler', icon: <Calendar className="h-5 w-5" />, section: 'scheduler', color: 'from-orange-500 to-orange-600' },
-  { label: 'Marketing', icon: <Megaphone className="h-5 w-5" />, section: 'marketing', color: 'from-pink-500 to-pink-600' },
-  { label: 'Affiliates', icon: <Share2 className="h-5 w-5" />, section: 'affiliates', color: 'from-teal-500 to-teal-600' },
-  { label: 'SEO Tools', icon: <Eye className="h-5 w-5" />, section: 'seo', color: 'from-lime-500 to-lime-600' },
-  { label: 'Moderation', icon: <FileText className="h-5 w-5" />, section: 'moderation', color: 'from-rose-500 to-rose-600' },
-  { label: 'Support', icon: <MessageSquare className="h-5 w-5" />, section: 'support', color: 'from-sky-500 to-sky-600' },
-  { label: 'Coupons', icon: <Tag className="h-5 w-5" />, section: 'coupons', color: 'from-violet-500 to-violet-600' },
-  { label: 'Certificates', icon: <Award className="h-5 w-5" />, section: 'certificates', color: 'from-yellow-500 to-yellow-600' },
-  { label: 'Notifications', icon: <ScrollText className="h-5 w-5" />, section: 'notifications', color: 'from-gray-500 to-gray-600' },
-  { label: 'Languages', icon: <Globe className="h-5 w-5" />, section: 'languages', color: 'from-blue-400 to-blue-500' },
-  { label: 'Integrations', icon: <Zap className="h-5 w-5" />, section: 'integrations', color: 'from-red-400 to-red-500' },
-  { label: 'A/B Testing', icon: <BarChart3 className="h-5 w-5" />, section: 'ab-testing', color: 'from-green-400 to-green-500' },
-  { label: 'Audit Log', icon: <Lock className="h-5 w-5" />, section: 'audit-log', color: 'from-purple-400 to-purple-500' },
+const navGroups = [
+  {
+    label: 'Core',
+    items: [
+      { label: 'Overview', icon: <BarChart3 className="h-4 w-4" />, section: 'overview' },
+      { label: 'Programs', icon: <Share2 className="h-4 w-4" />, section: 'affiliates' },
+      { label: 'Analytics', icon: <PieChart className="h-4 w-4" />, section: 'analytics' },
+      { label: 'SEO Tools', icon: <Eye className="h-4 w-4" />, section: 'seo' },
+    ],
+  },
+  {
+    label: 'Content',
+    items: [
+      { label: 'Articles', icon: <BookOpen className="h-4 w-4" />, section: 'articles' },
+      { label: 'AI Generator', icon: <Zap className="h-4 w-4" />, section: 'ai-generator' },
+      { label: 'Moderation', icon: <FileText className="h-4 w-4" />, section: 'moderation' },
+    ],
+  },
+  {
+    label: 'Users & Revenue',
+    items: [
+      { label: 'Users', icon: <Users className="h-4 w-4" />, section: 'users' },
+      { label: 'Payments', icon: <CreditCard className="h-4 w-4" />, section: 'payments' },
+      { label: 'Subscriptions', icon: <TrendingUp className="h-4 w-4" />, section: 'subscriptions' },
+      { label: 'Coupons', icon: <Tag className="h-4 w-4" />, section: 'coupons' },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'Marketing', icon: <Megaphone className="h-4 w-4" />, section: 'marketing' },
+      { label: 'Scheduler', icon: <Calendar className="h-4 w-4" />, section: 'scheduler' },
+      { label: 'Support', icon: <MessageSquare className="h-4 w-4" />, section: 'support' },
+      { label: 'Integrations', icon: <Globe className="h-4 w-4" />, section: 'integrations' },
+    ],
+  },
 ]
 
 export interface AdminShellProps {
@@ -60,87 +72,115 @@ export function AdminShell({ children, currentSection, onSectionChange }: AdminS
     router.push('/admin/login')
   }
 
+  const currentLabel =
+    navGroups.flatMap((g) => g.items).find((i) => i.section === currentSection)?.label || 'Dashboard'
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'hsl(var(--background))' }}>
       {/* Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? 'w-64' : 'w-0'
-        } flex flex-col border-r border-border bg-card transition-all duration-300 lg:w-64`}
+          sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
+        } flex flex-col border-r border-border/60 transition-all duration-300`}
+        style={{ background: 'hsl(222 47% 8%)' }}
       >
         {/* Logo */}
-        <div className="border-b border-border px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80">
-              <span className="font-serif text-lg font-bold text-primary-foreground">W</span>
+        <div className="border-b border-white/8 px-5 py-4">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal">
+              <span className="font-display text-sm font-bold text-white">W</span>
             </div>
             <div>
-              <h1 className="font-serif text-lg font-bold">WealthPath</h1>
-              <p className="text-xs text-muted-foreground">Admin Panel</p>
+              <p className="font-display text-sm font-bold text-white">WealthPath</p>
+              <p className="text-[10px] text-white/40">Admin Panel</p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Admin info */}
+        <div className="border-b border-white/8 px-5 py-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal/20 text-xs font-bold text-teal">
+              {currentAdmin?.name?.charAt(0) ?? 'A'}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-white">{currentAdmin?.name}</p>
+              <p className="truncate text-[10px] text-white/40">{currentAdmin?.email}</p>
             </div>
           </div>
         </div>
 
-        {/* Admin Info */}
-        <div className="border-b border-border px-6 py-4">
-          <p className="text-sm font-medium">{currentAdmin?.name}</p>
-          <p className="text-xs text-muted-foreground">{currentAdmin?.email}</p>
-        </div>
-
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="space-y-1">
-            {navItems.map((item) => (
-              <button
-                key={item.section}
-                onClick={() => onSectionChange(item.section)}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                  currentSection === item.section
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-secondary'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
+        <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin">
+          <div className="space-y-5">
+            {navGroups.map((group) => (
+              <div key={group.label}>
+                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                  {group.label}
+                </p>
+                <div className="space-y-0.5">
+                  {group.items.map((item) => (
+                    <button
+                      key={item.section}
+                      onClick={() => onSectionChange(item.section)}
+                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        currentSection === item.section
+                          ? 'bg-teal text-white'
+                          : 'text-white/50 hover:bg-white/6 hover:text-white'
+                      }`}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                      {currentSection === item.section && (
+                        <ChevronRight className="ml-auto h-3 w-3" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </nav>
 
         {/* Logout */}
-        <div className="border-t border-border p-4">
-          <Button
+        <div className="border-t border-white/8 p-3">
+          <button
             onClick={handleLogout}
-            variant="outline"
-            className="w-full justify-start gap-2"
-            size="sm"
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-white/40 transition-colors hover:bg-white/6 hover:text-white"
           >
             <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+            Sign out
+          </button>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <header className="border-b border-border bg-card px-6 py-4">
-          <div className="flex items-center justify-between">
+        {/* Top bar */}
+        <header
+          className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 px-6"
+          style={{ background: 'hsl(var(--card))' }}
+        >
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="rounded-lg p-2 hover:bg-secondary lg:hidden"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              aria-label="Toggle sidebar"
             >
-              {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            <div className="text-lg font-semibold">
-              {navItems.find(item => item.section === currentSection)?.label || 'Dashboard'}
-            </div>
-            <div className="w-10" />
+            <span className="text-sm font-semibold text-foreground">{currentLabel}</span>
           </div>
+          <Link
+            href="/"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View site &rarr;
+          </Link>
         </header>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-secondary/30">
+        {/* Scrollable content */}
+        <main className="flex-1 overflow-y-auto bg-background/60">
           <div className="p-6">
             {children}
           </div>

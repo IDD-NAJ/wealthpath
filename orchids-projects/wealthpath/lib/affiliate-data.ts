@@ -12,9 +12,11 @@ export interface AffiliateProgram {
   description: string
   category: string
   categorySlug: string
+  niche?: string // short niche label, e.g. "Stock Broker"
   rating: number // 1-5 with one decimal
   reviewCount: number
   commission: string // e.g. "Up to 30%" or "$50 per lead"
+  commissionValue?: number // numeric value for sorting
   commissionType: 'percentage' | 'flat' | 'hybrid'
   cookieDuration: number // days
   payoutThreshold: string // e.g. "$50"
@@ -24,7 +26,9 @@ export interface AffiliateProgram {
   pricing: PricingTier[]
   features: string[]
   affiliateUrl: string
+  affiliateLink?: string // alias — falls back to affiliateUrl
   website: string
+  status?: 'active' | 'pending' | 'inactive'
   featured: boolean
   trending: boolean
   editorsPick: boolean
@@ -1159,4 +1163,33 @@ export function searchPrograms(query: string): AffiliateProgram[] {
       p.category.toLowerCase().includes(q) ||
       p.tags.some((t) => t.toLowerCase().includes(q))
   )
+}
+
+// ─────────────────────────────────────────────
+// ALIASES & DERIVED HELPERS
+// ─────────────────────────────────────────────
+
+/** Alias so both `categories` and `affiliateCategories` work. */
+export const affiliateCategories = categories
+
+/** Get the numeric commission value for a program (for sort). */
+export function getProgramCommissionValue(p: AffiliateProgram): number {
+  if (p.commissionValue !== undefined) return p.commissionValue
+  const match = p.commission.match(/\d+/)
+  return match ? parseInt(match[0], 10) : 0
+}
+
+/** Get the program's affiliate link (prefer affiliateLink, fall back to affiliateUrl). */
+export function getProgramLink(p: AffiliateProgram): string {
+  return p.affiliateLink ?? p.affiliateUrl
+}
+
+/** Get the program's status (default to 'active' if not set). */
+export function getProgramStatus(p: AffiliateProgram): 'active' | 'pending' | 'inactive' {
+  return p.status ?? 'active'
+}
+
+/** Get the program's niche label (fall back to category). */
+export function getProgramNiche(p: AffiliateProgram): string {
+  return p.niche ?? p.category
 }
