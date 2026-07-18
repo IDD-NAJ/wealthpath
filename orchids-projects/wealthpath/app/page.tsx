@@ -1,10 +1,12 @@
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { HeroSection } from "@/components/hero-section"
-import { FeaturedArticles } from "@/components/featured-articles"
-import { LatestArticles } from "@/components/latest-articles"
-import { CategoriesOverview } from "@/components/categories-overview"
-import { NewsletterSection } from "@/components/newsletter-section"
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
+import { HeroSection } from '@/components/sections/hero'
+import { FeaturedCategories } from '@/components/sections/featured-categories'
+import { TrendingPrograms } from '@/components/sections/trending-programs'
+import { EditorsPicks } from '@/components/sections/editors-picks'
+import { LatestReviews } from '@/components/sections/latest-reviews'
+import { BestComparisons } from '@/components/sections/best-comparisons'
+import { NewsletterSection } from '@/components/sections/newsletter'
 
 export default function HomePage() {
   return (
@@ -12,9 +14,11 @@ export default function HomePage() {
       <SiteHeader />
       <main className="flex-1">
         <HeroSection />
-        <FeaturedArticles />
-        <CategoriesOverview />
-        <LatestArticles />
+        <FeaturedCategories />
+        <TrendingPrograms />
+        <EditorsPicks />
+        <LatestReviews />
+        <BestComparisons />
         <NewsletterSection />
       </main>
       <SiteFooter />
