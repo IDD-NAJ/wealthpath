@@ -1,6 +1,6 @@
 'use server'
 
-import { db } from '@/lib/db'
+import { db } from '@/lib/db/index'
 import { faqs } from '@/lib/db/schema'
 import { asc, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'

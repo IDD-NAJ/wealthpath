@@ -123,6 +123,9 @@ export const faqs = pgTable('faqs', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+// ─── Aliases for backward compatibility ──────────────────────────────────────
+export const affiliateProgramsCms = affiliatePrograms
+
 // ─── Type exports ─────────────────────────────────────────────────────────────
 export type HomepageSection = typeof homepageSections.$inferSelect
 export type NewHomepageSection = typeof homepageSections.$inferInsert
