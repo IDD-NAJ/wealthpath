@@ -61,13 +61,17 @@ export async function createDestination(data: {
   imageUrl: string
   avgPriceUsd: number
   bestSeason: string
-  rating: string
+  rating: number | string
   featured: boolean
   trending: boolean
   tags: string[]
   status: string
 }) {
-  await db.insert(destinations).values({ id: nanoid(), ...data })
+  await db.insert(destinations).values({ 
+    id: nanoid(), 
+    ...data,
+    rating: typeof data.rating === 'string' ? parseFloat(data.rating) : data.rating
+  })
   revalidatePath('/')
   revalidatePath('/destinations')
   revalidatePath('/admin')
@@ -84,16 +88,20 @@ export async function updateDestination(
     imageUrl: string
     avgPriceUsd: number
     bestSeason: string
-    rating: string
+    rating: number | string
     featured: boolean
     trending: boolean
     tags: string[]
     status: string
   }>
 ) {
+  const updateData = { ...data, updatedAt: new Date() }
+  if (updateData.rating !== undefined) {
+    updateData.rating = typeof updateData.rating === 'string' ? parseFloat(updateData.rating as string) : updateData.rating
+  }
   await db
     .update(destinations)
-    .set({ ...data, updatedAt: new Date() })
+    .set(updateData)
     .where(eq(destinations.id, id))
   revalidatePath('/')
   revalidatePath('/destinations')

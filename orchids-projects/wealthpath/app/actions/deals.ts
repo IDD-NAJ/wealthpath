@@ -52,10 +52,15 @@ export async function createDeal(data: {
   status: string
   expiresAt?: Date
 }) {
-  await db.insert(deals).values({ id: nanoid(), ...data })
-  revalidatePath('/')
-  revalidatePath('/deals')
-  revalidatePath('/admin')
+  try {
+    await db.insert(deals).values({ id: nanoid(), ...data })
+    revalidatePath('/')
+    revalidatePath('/deals')
+    revalidatePath('/admin')
+  } catch (error) {
+    console.error('[v0] Error creating deal:', error)
+    throw error
+  }
 }
 
 export async function updateDeal(

@@ -31,12 +31,12 @@ import { BestComparisons } from '@/components/sections/best-comparisons'
 
 export default async function HomePage() {
   const [sections, deals, destinations, posts, testimonials, faqs] = await Promise.all([
-    getEnabledHomepageSections(),
-    getFeaturedDeals(),
-    getTrendingDestinations(),
-    getFeaturedBlogPosts(6),
-    getFeaturedTestimonials(),
-    getFaqs(),
+    getEnabledHomepageSections().catch(() => []),
+    getFeaturedDeals().catch(() => []),
+    getTrendingDestinations().catch(() => []),
+    getFeaturedBlogPosts(6).catch(() => []),
+    getFeaturedTestimonials().catch(() => []),
+    getFaqs().catch(() => []),
   ])
 
   const sectionMap = Object.fromEntries(sections.map((s) => [s.key, s]))
