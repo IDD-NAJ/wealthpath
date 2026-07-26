@@ -4,16 +4,16 @@ import { sql } from '@/lib/db';
 // GET all articles
 export async function GET() {
   try {
-    const result = await sql.query(
+    const result = await sql(
       `SELECT * FROM articles ORDER BY created_at DESC`
     );
 
-    return NextResponse.json({ success: true, articles: result });
+    return NextResponse.json({ success: true, articles: result || [] });
   } catch (error) {
     console.error('[v0] Error fetching articles:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch articles' },
-      { status: 500 }
+      { error: 'Failed to fetch articles', articles: [] },
+      { status: 200 }
     );
   }
 }
@@ -35,9 +35,16 @@ export async function POST(request: NextRequest) {
       tags
     } = await request.json();
 
-    const result = await sql.query(
-      `INSERT INTO articles (title, slug, content, excerpt, category, author_id, status, featured, meta_title, meta_description, tags)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    if (!title || !slug || !content || !excerpt || !category || !author_id) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    const result = await sql(
+      `INSERT INTO articles (id, title, slug, content, excerpt, category, author_id, status, featured, meta_title, meta_description, tags)
+       VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
       [
         title,
@@ -50,13 +57,13 @@ export async function POST(request: NextRequest) {
         featured || false,
         meta_title,
         meta_description,
-        tags || []
+        tags ? tags.join(',') : ''
       ]
     );
 
     return NextResponse.json({
       success: true,
-      article: result[0]
+      article: result && result.length > 0 ? result[0] : null
     });
   } catch (error) {
     console.error('[v0] Error creating article:', error);

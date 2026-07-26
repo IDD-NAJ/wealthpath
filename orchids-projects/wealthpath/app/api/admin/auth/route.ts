@@ -13,12 +13,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Query user from database
-    const result = await sql.query(
+    const result = await sql(
       `SELECT id, email, name, role, avatar_url, password_hash FROM users WHERE email = $1 AND role = $2`,
       [email, 'admin']
     );
 
-    const user = result[0];
+    const user = result && result.length > 0 ? result[0] : null;
 
     if (!user) {
       return NextResponse.json(
