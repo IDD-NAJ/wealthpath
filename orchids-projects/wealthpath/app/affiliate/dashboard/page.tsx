@@ -12,14 +12,16 @@ export default function AffiliateDashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isLoaded && !user) {
+    if (!isLoaded) return
+
+    if (!user) {
       router.push('/sign-in')
       return
     }
 
     // Check if user has affiliate role
     const userRole = (user?.unsafeMetadata as any)?.role
-    if (isLoaded && userRole !== 'affiliate') {
+    if (userRole !== 'affiliate') {
       router.push('/auth-selection')
     }
   }, [isLoaded, user, router])

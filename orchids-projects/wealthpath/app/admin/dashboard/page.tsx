@@ -12,14 +12,16 @@ export default function AdminDashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isLoaded && !user) {
+    if (!isLoaded) return
+
+    if (!user) {
       router.push('/sign-in')
       return
     }
 
     // Check if user has admin role
     const userRole = (user?.unsafeMetadata as any)?.role
-    if (isLoaded && userRole !== 'admin') {
+    if (userRole !== 'admin') {
       router.push('/auth-selection')
     }
   }, [isLoaded, user, router])

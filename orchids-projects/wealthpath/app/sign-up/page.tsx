@@ -15,7 +15,6 @@ export default function SignUpPage() {
           <p className="mt-2 text-white/80">Create your account to get started</p>
         </div>
         <SignUp 
-          redirectUrl="/sign-in"
           afterSignUpUrl="/auth-selection"
           appearance={{
             elements: {

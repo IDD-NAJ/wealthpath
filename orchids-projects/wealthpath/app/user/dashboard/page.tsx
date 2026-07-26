@@ -12,14 +12,16 @@ export default function UserDashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isLoaded && !user) {
+    if (!isLoaded) return
+
+    if (!user) {
       router.push('/sign-in')
       return
     }
 
     // Redirect if not a regular user
     const userRole = (user?.unsafeMetadata as any)?.role
-    if (isLoaded && userRole !== 'user') {
+    if (userRole !== 'user') {
       router.push('/auth-selection')
     }
   }, [isLoaded, user, router])

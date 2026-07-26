@@ -20,24 +20,35 @@ export default function AuthSelectionPage() {
   }, [isLoaded, user, router])
 
   const handleRoleSelection = async (role: string) => {
+    if (!user) return
+    
     setSelectedRole(role)
     setIsLoading(true)
 
     try {
       // Update user metadata with role
-      await user?.update({
+      await user.update({
         unsafeMetadata: {
           role,
         },
       })
 
+      // Wait a moment for metadata to propagate
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       // Route based on role
-      if (role === 'admin') {
-        router.push('/admin/dashboard')
-      } else if (role === 'user') {
-        router.push('/user/dashboard')
-      } else if (role === 'affiliate') {
-        router.push('/affiliate/dashboard')
+      switch (role) {
+        case 'admin':
+          router.push('/admin/dashboard')
+          break
+        case 'user':
+          router.push('/user/dashboard')
+          break
+        case 'affiliate':
+          router.push('/affiliate/dashboard')
+          break
+        default:
+          setIsLoading(false)
       }
     } catch (error) {
       console.error('[v0] Error updating user role:', error)
