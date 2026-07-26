@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { BarChart3, Users, FileText, Settings } from 'lucide-react'
+import { Bookmark, Heart, Share2, TrendingUp } from 'lucide-react'
 
-export default function AdminDashboardPage() {
+export default function UserDashboardPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
 
@@ -17,9 +17,9 @@ export default function AdminDashboardPage() {
       return
     }
 
-    // Check if user has admin role
+    // Redirect if not a regular user
     const userRole = (user?.unsafeMetadata as any)?.role
-    if (isLoaded && userRole !== 'admin') {
+    if (isLoaded && userRole !== 'user') {
       router.push('/auth-selection')
     }
   }, [isLoaded, user, router])
@@ -29,13 +29,13 @@ export default function AdminDashboardPage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="text-muted-foreground">Loading admin dashboard...</p>
+          <p className="text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
     )
   }
 
-  if (!user || (user?.unsafeMetadata as any)?.role !== 'admin') {
+  if (!user || (user?.unsafeMetadata as any)?.role !== 'user') {
     return null
   }
 
@@ -45,8 +45,8 @@ export default function AdminDashboardPage() {
       <header className="border-b border-border bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
-            <h1 className="font-serif text-2xl font-bold">WealthPath Admin</h1>
-            <p className="text-sm text-muted-foreground">Dashboard</p>
+            <h1 className="font-serif text-2xl font-bold">WealthPath</h1>
+            <p className="text-sm text-muted-foreground">Your Dashboard</p>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium">{user?.primaryEmailAddress?.emailAddress}</span>
@@ -59,74 +59,74 @@ export default function AdminDashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold">Welcome back, {user?.firstName}!</h2>
-          <p className="mt-2 text-muted-foreground">Here&apos;s an overview of your admin panel</p>
+          <p className="mt-2 text-muted-foreground">Discover the best deals and affiliate programs</p>
         </div>
 
-        {/* Dashboard Cards */}
+        {/* Quick Stats */}
         <div className="grid gap-6 md:grid-cols-4 mb-8">
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                <p className="mt-2 text-2xl font-bold">1,234</p>
+                <p className="text-sm font-medium text-muted-foreground">Saved Deals</p>
+                <p className="mt-2 text-2xl font-bold">12</p>
               </div>
-              <Users className="h-8 w-8 text-blue-500" />
+              <Bookmark className="h-8 w-8 text-blue-500" />
             </div>
           </Card>
 
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Articles</p>
-                <p className="mt-2 text-2xl font-bold">456</p>
+                <p className="text-sm font-medium text-muted-foreground">Favorites</p>
+                <p className="mt-2 text-2xl font-bold">8</p>
               </div>
-              <FileText className="h-8 w-8 text-green-500" />
+              <Heart className="h-8 w-8 text-red-500" />
             </div>
           </Card>
 
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Affiliate Programs</p>
-                <p className="mt-2 text-2xl font-bold">89</p>
+                <p className="text-sm font-medium text-muted-foreground">Shared</p>
+                <p className="mt-2 text-2xl font-bold">24</p>
               </div>
-              <BarChart3 className="h-8 w-8 text-amber-500" />
+              <Share2 className="h-8 w-8 text-green-500" />
             </div>
           </Card>
 
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Revenue</p>
-                <p className="mt-2 text-2xl font-bold">$12.5K</p>
+                <p className="text-sm font-medium text-muted-foreground">Trending</p>
+                <p className="mt-2 text-2xl font-bold">5</p>
               </div>
-              <BarChart3 className="h-8 w-8 text-purple-500" />
+              <TrendingUp className="h-8 w-8 text-amber-500" />
             </div>
           </Card>
         </div>
 
-        {/* Admin Actions */}
+        {/* Browse & Manage */}
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="p-6">
-            <h3 className="mb-4 font-bold">Quick Actions</h3>
+            <h3 className="mb-4 font-bold">Explore</h3>
             <div className="space-y-3">
-              <Button className="w-full" variant="outline">
-                Create New Article
-              </Button>
-              <Button className="w-full" variant="outline">
-                Manage Affiliates
-              </Button>
-              <Button className="w-full" variant="outline">
-                View Analytics
+              <Button className="w-full" variant="outline" asChild>
+                <a href="/deals">Browse All Deals</a>
               </Button>
               <Button className="w-full" variant="outline" asChild>
-                <a href="/admin/settings">Settings</a>
+                <a href="/destinations">Explore Destinations</a>
+              </Button>
+              <Button className="w-full" variant="outline" asChild>
+                <a href="/search">Search Programs</a>
+              </Button>
+              <Button className="w-full" variant="outline" asChild>
+                <a href="/blog">Read Articles</a>
               </Button>
             </div>
           </Card>
 
           <Card className="p-6">
-            <h3 className="mb-4 font-bold">Admin Information</h3>
+            <h3 className="mb-4 font-bold">Your Profile</h3>
             <div className="space-y-3 text-sm">
               <div>
                 <p className="text-muted-foreground">Name</p>
@@ -137,8 +137,8 @@ export default function AdminDashboardPage() {
                 <p className="font-medium">{user?.primaryEmailAddress?.emailAddress}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Role</p>
-                <p className="font-medium">Administrator</p>
+                <p className="text-muted-foreground">Account Type</p>
+                <p className="font-medium">Regular User</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Member Since</p>
